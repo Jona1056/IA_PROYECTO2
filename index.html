@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Model Selector</title>
+    <style>
+        /* General */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        body, html {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f4f8;
+            color: #333;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            text-align: center;
+        }
+        
+        /* Header */
+        h1 {
+            font-size: 2em;
+            color: #4a90e2;
+            margin-bottom: 20px;
+        }
+        
+        /* Labels and Inputs */
+        label {
+            font-weight: bold;
+            color: #4a4a4a;
+            display: block;
+            margin: 15px 0 5px;
+        }
+
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            border-radius: 8px;
+            border: 1px solid #d1d1d1;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="file"]:hover,
+        select:hover {
+            border-color: #4a90e2;
+        }
+
+        /* Button */
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #4a90e2;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Selecciona Archivo y Modelo ML</h1>
+    
+    <!-- Seleccionador de archivos -->
+    <label for="fileInput">Archivo CSV o DataSet:</label>
+    <input type="file" id="fileInput" accept=".csv">
+    
+    <!-- Seleccionador de algoritmos o modelos de ML -->
+    <label for="modelSelect">Modelo de Machine Learning:</label>
+    <select id="modelSelect">
+        <option value="linear-regression">Regresión Lineal</option>
+        <option value="decision-tree">Árbol de Decisión</option>
+        <option value="random-forest">Random Forest</option>
+        <option value="k-nearest-neighbors">K-Nearest Neighbors</option>
+        <option value="support-vector-machine">Support Vector Machine</option>
+        <option value="neural-network">Red Neuronal</option>
+    </select>
+    
+    <!-- Botón de envío -->
+    <button type="button" onclick="submitForm()">Procesar</button>
+</div>
+
+<script>
+    function submitForm() {
+        const fileInput = document.getElementById("fileInput").files[0];
+        const model = document.getElementById("modelSelect").value;
+
+        if (fileInput && model) {
+            alert(`Archivo seleccionado: ${fileInput.name}\nModelo seleccionado: ${model}`);
+        } else {
+            alert("Por favor, selecciona un archivo y un modelo.");
+        }
+    }
+</script>
+
+</body>
+</html>
