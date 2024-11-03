@@ -3,122 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Model Selector</title>
+    <title>Modelo de Machine Learning</title>
+    <script type="text/javascript" src="./tytus.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* General */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        body {
             font-family: Arial, sans-serif;
-        }
-        
-        body, html {
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f0f4f8;
+            background-color: #f9f9f9;
             color: #333;
+            margin: 0;
+            padding: 20px;
         }
-        
-        /* Container */
+        h2 {
+            color: #4CAF50;
+        }
         .container {
-            max-width: 500px;
-            width: 100%;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             background-color: #fff;
-            text-align: center;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        /* Header */
-        h1 {
-            font-size: 2em;
-            color: #4a90e2;
-            margin-bottom: 20px;
+        .form-group {
+            margin-bottom: 15px;
         }
-        
-        /* Labels and Inputs */
         label {
-            font-weight: bold;
-            color: #4a4a4a;
             display: block;
-            margin: 15px 0 5px;
+            margin-bottom: 5px;
         }
-
         input[type="file"],
+        input[type="text"],
         select {
             width: 100%;
-            padding: 12px;
-            font-size: 1em;
-            border-radius: 8px;
-            border: 1px solid #d1d1d1;
-            outline: none;
-            transition: border-color 0.3s ease;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f2f2f2;
         }
-
-        input[type="file"]:hover,
-        select:hover {
-            border-color: #4a90e2;
-        }
-
-        /* Button */
         button {
-            width: 100%;
-            padding: 12px;
-            font-size: 1em;
-            color: #fff;
-            background-color: #4a90e2;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s ease;
+            font-size: 16px;
         }
-
         button:hover {
-            background-color: #357ABD;
+            background-color: #45a049;
+        }
+        #chart_div, #curve_chart, #pattern_chart {
+            margin-top: 20px;
+            width: 900px;
+            height: 500px;
+        }
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 8px;
+            text-align: center;
+        }
+        #displayTable {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>Modelo de Machine Learning</h2>
+        <form id="mlForm" onsubmit="return false;">
+            <div class="form-group">
+                <label for="modelSelect">Seleccionar Modelo:</label>
+                <select id="modelSelect">
+                    <option value="">--Seleccione un modelo--</option>
+                    <option value="linear">Regresión Lineal</option>
+                    <option value="polinomial">Regresion Polinomial</option>
+                    <option value="Arbol">Arbol de decision ID3</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="useCSV">Usar archivo CSV:</label>
+                <input type="checkbox" id="useCSV">
+            </div>
+            <div class="form-group" id="csvGroup">
+                <label for="fileInput">Seleccionar archivo CSV:</label>
+                <input type="file" id="fileInput" accept=".csv">
+            </div>
+            <div class="form-group" id="manualInputGroup" style="display:none;">
+                <label for="xInput">Ingrese X (separados por comas):</label>
+                <input type="text" id="xInput" placeholder="Ejemplo: 3,5,6">
+                <label for="yInput">Ingrese Y (separados por comas):</label>
+                <input type="text" id="yInput" placeholder="Ejemplo: 1,2,3">
+            </div>
+            <button id="loadButton">Entrenar Modelos</button>
+            <button id="processButton" style="display:none;">Mostrar Predicciones</button>
+            <button id="trainButton" style="display:none;">Resultado Predicciones</button>
+            <button id="drawButton" style="display:none;">Mostrar Tendencias</button>
+            <button id="showPatternsButton" style="display:none;">Mostrar Patrones</button> <!-- Nuevo botón -->
+        </form>
+        <p id="log"></p>
 
-<div class="container">
-    <h1>Selecciona Archivo y Modelo ML</h1>
-    
-    <!-- Seleccionador de archivos -->
-    <label for="fileInput">Archivo CSV o DataSet:</label>
-    <input type="file" id="fileInput" accept=".csv">
-    
-    <!-- Seleccionador de algoritmos o modelos de ML -->
-    <label for="modelSelect">Modelo de Machine Learning:</label>
-    <select id="modelSelect">
-        <option value="linear-regression">Regresión Lineal</option>
-        <option value="decision-tree">Árbol de Decisión</option>
-        <option value="random-forest">Random Forest</option>
-        <option value="k-nearest-neighbors">K-Nearest Neighbors</option>
-        <option value="support-vector-machine">Support Vector Machine</option>
-        <option value="neural-network">Red Neuronal</option>
-    </select>
-    
-    <!-- Botón de envío -->
-    <button type="button" onclick="submitForm()">Procesar</button>
-</div>
+        <h2>Datos de Entrenamiento</h2>
+        <table style="text-align: center">
+            <thead>
+                <tr>
+                    <th>X Train</th>
+                    <th>Y Train</th>
+                    <th>X A predecir</th>
+                </tr>
+            </thead>
+            <tbody id="trainingDataTable">
+                <!-- Training data will be populated here -->
+            </tbody>
+        </table>
 
-<script>
-    function submitForm() {
-        const fileInput = document.getElementById("fileInput").files[0];
-        const model = document.getElementById("modelSelect").value;
+        <h2>Data predecida</h2>
+        <table id="displayTable" style="text-align: center">
+            <thead>
+                <tr>
+                    <th>X Base</th>
+                    <th>Y Predecida</th>
+                    <th>ERROR %</th>
+                </tr>
+            </thead>
+            <tbody>
+            
+            </tbody>
+        </table>
+        <table id="displayTable">
+            <thead>
+                <tr><th>X To Predict</th><th>Y Predict</th><th>Error (%)</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <canvas id="trendChart" width="400" height="200"></canvas>
+        <canvas id="trendChart2" width="400" height="200"></canvas>
+        <canvas id="trendChart3" width="400" height="200"></canvas>
 
-        if (fileInput && model) {
-            alert(`Archivo seleccionado: ${fileInput.name}\nModelo seleccionado: ${model}`);
-        } else {
-            alert("Por favor, selecciona un archivo y un modelo.");
+        <h2>Gráficas</h2>
+        <div id="chart_div"></div>
+        <div id="pattern_chart" style="display:none;"></div> <!-- Contenedor para la gráfica de patrones -->
+    </div>
+
+    <script type="text/javascript">
+        let xTrain = [];
+        let yTrain = [];
+        let yPredict = [];
+
+        // Show/hide input fields based on checkbox
+        document.getElementById("useCSV").addEventListener("change", function() {
+            const csvGroup = document.getElementById("csvGroup");
+            const manualInputGroup = document.getElementById("manualInputGroup");
+            if (this.checked) {
+                csvGroup.style.display = 'block';
+                manualInputGroup.style.display = 'none';
+            } else {
+                csvGroup.style.display = 'none';
+                manualInputGroup.style.display = 'block';
+            }
+        });
+
+        document.getElementById("loadButton").addEventListener("click", function() {
+            const selectedModel = document.getElementById("modelSelect").value;
+
+            if (selectedModel === "linear") {
+                if (document.getElementById("useCSV").checked) {
+                    const fileInput = document.getElementById("fileInput");
+                    const file = fileInput.files[0];
+
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const contents = e.target.result;
+                            processCSV(contents);
+                            document.getElementById("processButton").style.display = 'inline'; // Show process button
+                        };
+                        reader.readAsText(file);
+                    }
+                } else {
+                    // Process manual inputs
+                    const xInput = document.getElementById("xInput").value.split(',').map(Number);
+                    const yInput = document.getElementById("yInput").value.split(',').map(Number);
+                    if (xInput.length === yInput.length) {
+                        xTrain = xInput;
+                        yTrain = yInput;
+
+                        // Populate training data table
+                        const trainingDataTable = document.getElementById("trainingDataTable");
+                        trainingDataTable.innerHTML = ""; // Clear existing data
+                        for (let i = 0; i < xTrain.length; i++) {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `<td>${xTrain[i]}</td><td>${yTrain[i]}</td>`;
+                            trainingDataTable.appendChild(row);
+                        }
+
+                        document.getElementById("processButton").style.display = 'inline'; // Show process button
+                    } else {
+                        alert("El número de valores de X y Y debe ser igual.");
+                    }
+                }
+            } else if(selectedModel === "polinomial") {
+                if (document.getElementById("useCSV").checked) {
+                    const fileInput = document.getElementById("fileInput");
+                    const file = fileInput.files[0];
+        
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const contents = e.target.result;
+                            processPolynomialCSV(contents); // New function to process polynomial CSV
+                            document.getElementById("processButton").style.display = 'inline'; // Show process button
+                        };
+                        reader.readAsText(file);
+                    }
+                } else {
+                    // Process manual inputs
+                    const xInput = document.getElementById("xInput").value.split(',').map(Number);
+                    const yInput = document.getElementById("yInput").value.split(',').map(Number);
+                    if (xInput.length === yInput.length) {
+                        xTrain = xInput;
+                        yTrain = yInput;
+
+                        // Populate training data table
+                        const trainingDataTable = document.getElementById("trainingDataTable");
+                        trainingDataTable.innerHTML = ""; // Clear existing data
+                        for (let i = 0; i < xTrain.length; i++) {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `<td>${xTrain[i]}</td><td>${yTrain[i]}</td>`;
+                            trainingDataTable.appendChild(row);
+                        }
+
+                        document.getElementById("processButton").style.display = 'inline'; // Show process button
+                    } else {
+                        alert("El número de valores de X y Y debe ser igual.");
+                    }
+                }
+            }
+        });
+
+        function drawTrendChart(x, y, predicted) {
+            const data = new google.visualization.DataTable();
+            data.addColumn('number', 'X');
+            data.addColumn('number', 'Y Original');
+            data.addColumn('number', 'Y Predicted');
+        
+            for (let i = 0; i < x.length; i++) {
+                data.addRow([x[i], y[i], predicted[i]]);
+            }
+        
+            const options = {
+                title: 'Análisis de Tendencias',
+                curveType: 'function',
+                legend: { position: 'bottom' },
+                hAxis: {
+                    title: 'X',
+                },
+                vAxis: {
+                    title: 'Y',
+                },
+                colors: ['#1b9e77', '#d95f02'],
+            };
+        
+            const chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
         }
-    }
-</script>
 
+        function processCSV(data) {
+            const rows = data.trim().split("\n");
+            const trainingDataTable = document.getElementById("trainingDataTable");
+            trainingDataTable.innerHTML = ""; // Clear existing data
+            xTrain = [];
+            yTrain = [];
+
+            for (let i = 1; i < rows.length; i++) {
+                const cols = rows[i].split(";");
+                xTrain.push(parseFloat(cols[0]));
+                yTrain.push(parseFloat(cols[1]));
+
+                // Populate training data table
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${cols[0]}</td><td>${cols[1]}</td>`;
+                trainingDataTable.appendChild(row);
+            }
+        }
+        function processPolynomialCSV(contents) {
+            const rows = contents.split('\n').map(row => row.split(';'));
+            const headers = rows[0]; // Get the headers
+            const xTrain = [];
+            const yTrain = [];
+            const xToPredict = [];
+        
+            for (let i = 1; i < rows.length; i++) { // Start from 1 to skip headers
+                const row = rows[i];
+                if (row.length === 3) { // Ensure the row has the correct number of columns
+                    xTrain.push(Number(row[0])); // XTrain
+                    yTrain.push(Number(row[1])); // YTrain
+                    xToPredict.push(Number(row[2])); // XToPredict
+                }
+            }
+        
+            // Update the global variables used in your charting
+            window.xTrain = xTrain;
+            window.yTrain = yTrain;
+            window.predictArray = xToPredict;
+        
+            // Populate training data table
+            const trainingDataTable = document.getElementById("trainingDataTable");
+            trainingDataTable.innerHTML = ""; 
+            
+            for (let i = 0; i < xTrain.length; i++) {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${xTrain[i]}</td><td>${yTrain[i]}</td><td>${xToPredict[i]}</td>`;
+                trainingDataTable.appendChild(row);
+            }
+            // Fit the polynomial model with the loaded data
+            fitPolynomialModel();
+        }
+        
+        function fitPolynomialModel() {
+            var polynomial = new PolynomialRegression();
+        
+            // Fit and predict with different degrees
+            polynomial.fit(window.xTrain, window.yTrain, 2);
+            var yPredict = polynomial.predict(window.predictArray);
+            var r2 = polynomial.getError();
+        
+            polynomial.fit(window.xTrain, window.yTrain, 3);
+            var yPredict2 = polynomial.predict(window.predictArray);
+            var r22 = polynomial.getError();
+        
+            polynomial.fit(window.xTrain, window.yTrain, 4);
+            var yPredict3 = polynomial.predict(window.predictArray);
+            var r23 = polynomial.getError();
+        
+            // Display predictions in the table
+            const displayTable = document.getElementById("displayTable").getElementsByTagName("tbody")[0];
+            displayTable.innerHTML = ""; // Clear existing predictions
+            for (let i = 0; i < window.predictArray.length; i++) {
+                const row = document.createElement("tr");
+                const error = Math.abs((yPredict[i] - window.yTrain[i]) / window.yTrain[i]) * 100; // Calculate error percentage
+                row.innerHTML = `<td>${window.predictArray[i]}</td><td>${yPredict[i]}</td><td>${error.toFixed(2)}%</td>`;
+                displayTable.appendChild(row);
+            }
+        
+            // Draw the trend charts
+            drawTrendCharts(yPredict, yPredict2, yPredict3);
+        }
+        
+        function drawTrendCharts(yPredict, yPredict2, yPredict3) {
+            // Assuming you are using a library like Chart.js for drawing the charts
+            const ctx1 = document.getElementById('trendChart').getContext('2d');
+            const ctx2 = document.getElementById('trendChart2').getContext('2d');
+            const ctx3 = document.getElementById('trendChart3').getContext('2d');
+        
+            // Create the first chart for yPredict
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: window.predictArray,
+                    datasets: [{
+                        label: 'Predictions (Degree 2)',
+                        data: yPredict,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'X Values'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Y Predictions'
+                            }
+                        }
+                    }
+                }
+            });
+        
+            // Create the second chart for yPredict2
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: window.predictArray,
+                    datasets: [{
+                        label: 'Predictions (Degree 3)',
+                        data: yPredict2,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'X Values'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Y Predictions'
+                            }
+                        }
+                    }
+                }
+            });
+        
+            // Create the third chart for yPredict3
+            new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: window.predictArray,
+                    datasets: [{
+                        label: 'Predictions (Degree 4)',
+                        data: yPredict3,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'X Values'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Y Predictions'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        document.getElementById("processButton").addEventListener("click", function() {
+            // Create and train the linear regression model
+            const linear = new LinearRegression();
+            linear.fit(xTrain, yTrain);
+            yPredict = linear.predict(xTrain);
+
+            // Update log and predicted data table
+            document.getElementById("log").innerHTML = `
+                <br>X Train: [${xTrain.join(", ")}]
+                <br>Y Train: [${yTrain.join(", ")}]
+                <br>Y Predicted: [${yPredict.join(", ")}]
+            `;
+
+            const predictedTable = document.getElementById("displayTable").getElementsByTagName("tbody")[0];
+            predictedTable.innerHTML = ""; // Clear existing predicted data
+            for (let i = 0; i < xTrain.length; i++) {
+                const error = Math.abs(yTrain[i] - yPredict[i]) / yTrain[i] * 100;
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${xTrain[i]}</td><td>${yPredict[i]}</td><td>${error.toFixed(2)}%</td>`;
+                predictedTable.appendChild(row);
+            }
+
+            document.getElementById("drawButton").style.display = 'inline'; // Show draw button
+        });
+
+        document.getElementById("drawButton").addEventListener("click", function() {
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(function() {
+                drawTrendChart(xTrain, yTrain, yPredict);
+            });
+
+            document.getElementById("showPatternsButton").style.display = 'inline'; // Show show patterns button
+        });
+
+        document.getElementById("showPatternsButton").addEventListener("click", function() {
+
+            const data = new google.visualization.DataTable();
+            data.addColumn('number', 'X');
+            data.addColumn('number', 'Y');
+
+            for (let i = 0; i < xTrain.length; i++) {
+                data.addRow([xTrain[i], yTrain[i]]);
+            }
+
+            const options = {
+                title: 'Gráfica de Patrones',
+                hAxis: {
+                    title: 'X',
+                },
+                vAxis: {
+                    title: 'Y',
+                },
+                colors: ['#1b9e77'],
+            };
+
+            const chart = new google.visualization.ScatterChart(document.getElementById('pattern_chart'));
+            chart.draw(data, options);
+            document.getElementById("pattern_chart").style.display = 'block'; // Mostrar la gráfica de patrones
+        });
+    </script>
 </body>
 </html>
